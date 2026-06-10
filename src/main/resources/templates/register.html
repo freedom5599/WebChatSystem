@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 在线聊天系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        :root {
+            --bg-app: #F5F1EA;
+            --bg-card: #FFFFFF;
+            --accent: #0F766E;
+            --accent-hover: #0D5C56;
+            --text-primary: #1C1917;
+            --text-secondary: #57534E;
+            --text-tertiary: #A8A29E;
+            --border-medium: rgba(28, 25, 23, 0.10);
+            --accent-soft: rgba(15, 118, 110, 0.10);
+        }
+        body {
+            background: var(--bg-app);
+            overflow: auto;
+        }
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(15, 118, 110, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 70% 50% at 80% 100%, rgba(217, 119, 6, 0.06) 0%, transparent 50%),
+                var(--bg-app);
+        }
+        .auth-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 420px;
+            max-width: 100%;
+            box-shadow: 0 24px 64px rgba(28, 25, 23, 0.12), 0 2px 8px rgba(28, 25, 23, 0.04);
+            animation: cardIn 600ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, #115E59 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
+        }
+        .auth-card h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-family: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .auth-card .subtitle {
+            text-align: center;
+            color: var(--text-tertiary);
+            margin-bottom: 32px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1px solid var(--border-medium);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-card);
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+        }
+        .form-group input::placeholder {
+            color: var(--text-tertiary);
+        }
+        .form-group input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent) 0%, #115E59 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(15, 118, 110, 0.35);
+        }
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+        .auth-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 200ms;
+        }
+        .auth-link a:hover {
+            opacity: 0.7;
+        }
+        .error-msg {
+            color: #DC2626;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+            padding: 10px;
+            background: rgba(220, 38, 38, 0.08);
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .success-msg {
+            color: #16A34A;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+            padding: 10px;
+            background: rgba(22, 163, 74, 0.10);
+            border-radius: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">💬</div>
+            <h2>加入我们</h2>
+            <p class="subtitle">创建账号，开启你的聊天之旅</p>
+            <div class="error-msg" id="errorMsg"></div>
+            <div class="success-msg" id="successMsg"></div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名（登录账号）" required>
+                </div>
+                <div class="form-group">
+                    <label>昵称</label>
+                    <input type="text" id="nickname" name="nickname" placeholder="请输入昵称（可选）">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                </div>
+                <div class="form-group">
+                    <label>确认密码</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="请再次输入密码" required>
+                </div>
+                <button type="submit" class="btn-primary">注 册</button>
+            </form>
+            <div class="auth-link">
+                已有账号？<a href="/login">立即登录</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var username = document.getElementById('username').value;
+            var nickname = document.getElementById('nickname').value;
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var errorMsg = document.getElementById('errorMsg');
+            var successMsg = document.getElementById('successMsg');
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (password !== confirmPassword) {
+                errorMsg.textContent = '两次输入的密码不一致';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            fetch('/api/user/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: username, nickname: nickname, password: password})
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.code === 200) {
+                    successMsg.textContent = '注册成功，即将跳转到登录页面...';
+                    successMsg.style.display = 'block';
+                    setTimeout(function() {
+                        window.location.href = '/login';
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = data.msg;
+                    errorMsg.style.display = 'block';
+                }
+            })
+            .catch(function(err) {
+                errorMsg.textContent = '注册失败，请重试';
+                errorMsg.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

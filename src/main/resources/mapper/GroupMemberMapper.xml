@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chat.mapper.GroupMemberMapper">
+    <resultMap id="groupMemberResultMap" type="GroupMember">
+        <id property="id" column="id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="role" column="role"/>
+        <result property="joinTime" column="join_time"/>
+        <result property="userNickname" column="user_nickname"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="userSignature" column="user_signature"/>
+        <result property="userStatus" column="user_status"/>
+    </resultMap>
+    <select id="findByGroupId" resultMap="groupMemberResultMap">
+        SELECT gm.id, gm.group_id, gm.user_id, gm.role, gm.join_time,
+               u.nickname AS user_nickname, u.avatar AS user_avatar,
+               u.signature AS user_signature, u.status AS user_status
+        FROM group_member gm
+        LEFT JOIN user u ON gm.user_id = u.id
+        WHERE gm.group_id = #{groupId}
+        ORDER BY gm.role DESC, gm.join_time ASC
+    </select>
+    <select id="findByGroupIdAndUserId" resultMap="groupMemberResultMap">
+        SELECT gm.id, gm.group_id, gm.user_id, gm.role, gm.join_time,
+               u.nickname AS user_nickname, u.avatar AS user_avatar
+        FROM group_member gm
+        LEFT JOIN user u ON gm.user_id = u.id
+        WHERE gm.group_id = #{groupId} AND gm.user_id = #{userId}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO group_member (group_id, user_id, role)
+        VALUES (#{groupId}, #{userId}, #{role})
+    </insert>
+    <delete id="delete">
+        DELETE FROM group_member WHERE group_id = #{groupId} AND user_id = #{userId}
+    </delete>
+    <delete id="deleteByGroupId">
+        DELETE FROM group_member WHERE group_id = #{groupId}
+    </delete>
+</mapper>

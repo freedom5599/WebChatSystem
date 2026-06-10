@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chat.mapper.PrivateMessageMapper">
+    <resultMap id="privateMessageResultMap" type="PrivateMessage">
+        <id property="id" column="id"/>
+        <result property="fromId" column="from_id"/>
+        <result property="toId" column="to_id"/>
+        <result property="content" column="content"/>
+        <result property="msgType" column="msg_type"/>
+        <result property="voiceUrl" column="voice_url"/>
+        <result property="isRead" column="is_read"/>
+        <result property="createTime" column="create_time"/>
+        <result property="fromNickname" column="from_nickname"/>
+        <result property="fromAvatar" column="from_avatar"/>
+    </resultMap>
+    <select id="findChatHistory" resultMap="privateMessageResultMap">
+        SELECT pm.id, pm.from_id, pm.to_id, pm.content, pm.msg_type, pm.voice_url,
+               pm.is_read, pm.create_time,
+               u.nickname AS from_nickname, u.avatar AS from_avatar
+        FROM private_message pm
+        LEFT JOIN user u ON pm.from_id = u.id
+        WHERE (pm.from_id = #{userId1} AND pm.to_id = #{userId2})
+           OR (pm.from_id = #{userId2} AND pm.to_id = #{userId1})
+        ORDER BY pm.create_time ASC
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO private_message (from_id, to_id, content, msg_type, voice_url)
+        VALUES (#{fromId}, #{toId}, #{content}, #{msgType}, #{voiceUrl})
+    </insert>
+    <update id="markAsRead">
+        UPDATE private_message SET is_read = 1
+        WHERE from_id = #{fromId} AND to_id = #{toId} AND is_read = 0
+    </update>
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM private_message
+        WHERE from_id = #{fromId} AND to_id = #{toId} AND is_read = 0
+    </select>
+    <select id="findChatHistoryPaged" resultMap="privateMessageResultMap">
+        SELECT pm.id, pm.from_id, pm.to_id, pm.content, pm.msg_type, pm.voice_url,
+               pm.is_read, pm.create_time,
+               u.nickname AS from_nickname, u.avatar AS from_avatar
+        FROM private_message pm
+        LEFT JOIN user u ON pm.from_id = u.id
+        WHERE (pm.from_id = #{userId1} AND pm.to_id = #{userId2})
+           OR (pm.from_id = #{userId2} AND pm.to_id = #{userId1})
+        ORDER BY pm.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chat.mapper.FriendMapper">
+    <resultMap id="friendResultMap" type="Friend">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="friendId" column="friend_id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="friendNickname" column="friend_nickname"/>
+        <result property="friendAvatar" column="friend_avatar"/>
+        <result property="friendSignature" column="friend_signature"/>
+        <result property="friendStatus" column="friend_status"/>
+        <result property="groupName" column="group_name"/>
+    </resultMap>
+    <select id="findFriendsByUserId" resultMap="friendResultMap">
+        SELECT f.id, f.user_id, f.friend_id, f.group_id, f.remark, f.create_time,
+               u.nickname AS friend_nickname, u.avatar AS friend_avatar,
+               u.signature AS friend_signature, u.status AS friend_status,
+               fg.group_name
+        FROM friend f
+        LEFT JOIN user u ON f.friend_id = u.id
+        LEFT JOIN friend_group fg ON f.group_id = fg.id
+        WHERE f.user_id = #{userId}
+        ORDER BY fg.sort_order, f.create_time
+    </select>
+    <select id="findFriendsByGroupId" resultMap="friendResultMap">
+        SELECT f.id, f.user_id, f.friend_id, f.group_id, f.remark, f.create_time,
+               u.nickname AS friend_nickname, u.avatar AS friend_avatar,
+               u.signature AS friend_signature, u.status AS friend_status
+        FROM friend f
+        LEFT JOIN user u ON f.friend_id = u.id
+        WHERE f.group_id = #{groupId}
+    </select>
+    <select id="findByUserIdAndFriendId" resultMap="friendResultMap">
+        SELECT f.id, f.user_id, f.friend_id, f.group_id, f.remark, f.create_time,
+               u.nickname AS friend_nickname, u.avatar AS friend_avatar,
+               u.signature AS friend_signature, u.status AS friend_status
+        FROM friend f
+        LEFT JOIN user u ON f.friend_id = u.id
+        WHERE f.user_id = #{userId} AND f.friend_id = #{friendId}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend (user_id, friend_id, group_id, remark)
+        VALUES (#{userId}, #{friendId}, #{groupId}, #{remark})
+    </insert>
+    <delete id="delete">
+        DELETE FROM friend WHERE user_id = #{userId} AND friend_id = #{friendId}
+    </delete>
+    <update id="updateGroupId">
+        UPDATE friend SET group_id = #{groupId} WHERE user_id = #{userId} AND friend_id = #{friendId}
+    </update>
+    <update id="updateRemark">
+        UPDATE friend SET remark = #{remark} WHERE user_id = #{userId} AND friend_id = #{friendId}
+    </update>
+</mapper>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线聊天系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/chat.css">
+</head>
+<body>
+    <div class="chat-app">
+        <!-- 左侧边栏 -->
+        <div class="sidebar">
+            <!-- 用户信息区 -->
+            <div class="user-info" id="myInfo">
+                <div class="avatar-wrapper">
+                    <img class="avatar" id="myAvatar" src="/img/default-avatar.png" alt="头像">
+                    <span class="online-dot" id="myOnlineDot"></span>
+                </div>
+                <div class="user-detail">
+                    <div class="nickname" id="myNickname">加载中...</div>
+                    <div class="signature" id="mySignature"></div>
+                </div>
+                <div class="user-actions">
+                    <button class="icon-btn" title="个人信息" onclick="showProfileModal()">👤</button>
+                    <button class="icon-btn" title="退出登录" onclick="logout()">🚪</button>
+                </div>
+            </div>
+
+            <!-- 功能标签 -->
+            <div class="tab-bar">
+                <div class="tab active" data-tab="friends" onclick="switchTab('friends')">好友</div>
+                <div class="tab" data-tab="groups" onclick="switchTab('groups')">群聊</div>
+                <div class="tab" data-tab="requests" onclick="switchTab('requests')">
+                    好友申请<span class="badge" id="requestBadge" style="display:none">0</span>
+                </div>
+            </div>
+
+            <!-- 好友列表 -->
+            <div class="tab-content active" id="friendsTab">
+                <div class="search-bar">
+                    <input type="text" id="searchFriendInput" placeholder="搜索好友/添加好友" onkeyup="handleFriendSearch(event)">
+                    <button class="small-btn" onclick="showAddFriendModal()">添加</button>
+                </div>
+                <div class="friend-list" id="friendList">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+
+            <!-- 群聊列表 -->
+            <div class="tab-content" id="groupsTab">
+                <div class="search-bar">
+                    <input type="text" placeholder="搜索群聊" readonly>
+                    <button class="small-btn" onclick="showCreateGroupModal()">创建</button>
+                </div>
+                <div class="group-list" id="groupList">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+
+            <!-- 好友申请列表 -->
+            <div class="tab-content" id="requestsTab">
+                <h4>好友申请</h4>
+                <div class="request-list" id="requestList">
+                    <div class="loading">加载中...</div>
+                </div>
+                <h4>群邀请</h4>
+                <div class="request-list" id="groupInviteList">
+                    <div class="loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧聊天区 -->
+        <div class="chat-area" id="chatArea">
+            <div class="chat-placeholder" id="chatPlaceholder">
+                <div class="placeholder-icon">💬</div>
+                <div class="placeholder-text">选择一个好友或群聊开始聊天</div>
+            </div>
+
+            <!-- 聊天头部 -->
+            <div class="chat-header" id="chatHeader" style="display:none">
+                <div class="chat-target-info">
+                    <img class="avatar" id="chatTargetAvatar" src="/img/default-avatar.png" alt="">
+                    <div>
+                        <div class="chat-target-name" id="chatTargetName"></div>
+                        <div class="chat-target-desc" id="chatTargetDesc"></div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="icon-btn" title="聊天记录" onclick="showHistoryModal()">📋</button>
+                    <button class="icon-btn" title="导出记录" onclick="exportChat()">📥</button>
+                    <button class="icon-btn" id="groupInfoBtn" title="群信息" onclick="showGroupInfoModal()" style="display:none">ℹ️</button>
+                    <button class="icon-btn" id="friendManageBtn" title="好友管理" onclick="showFriendManageModal()" style="display:none">⚙️</button>
+                </div>
+            </div>
+
+            <!-- 消息列表 -->
+            <div class="chat-messages" id="chatMessages" style="display:none"></div>
+
+            <!-- 输入区 -->
+            <div class="chat-input" id="chatInput" style="display:none">
+                <div class="input-toolbar">
+                    <button class="icon-btn private-only" id="imageBtn" title="发送图片" onclick="document.getElementById('imageFile').click()" style="display:none">🖼️</button>
+                    <button class="icon-btn private-only" id="fileBtn" title="发送文件" onclick="document.getElementById('attachFile').click()" style="display:none">📎</button>
+                    <button class="icon-btn" title="语音消息" onclick="toggleVoiceRecord()">🎤</button>
+                    <input type="file" id="imageFile" accept="image/*" style="display:none" onchange="sendImageFile()">
+                    <input type="file" id="attachFile" style="display:none" onchange="sendAttachFile()">
+                </div>
+                <div class="input-area">
+                    <textarea id="messageInput" placeholder="输入消息，按Enter发送..." onkeydown="handleInputKeydown(event)"></textarea>
+                    <button class="send-btn" onclick="sendMessage()">发送</button>
+                </div>
+                <div class="voice-area" id="voiceArea" style="display:none">
+                    <div class="voice-record">
+                        <button class="voice-btn" id="voiceRecordBtn" onmousedown="startRecording()" onmouseup="stopRecording()" onmouseleave="stopRecording()">
+                            按住说话
+                        </button>
+                        <span class="voice-hint" id="voiceHint">按住按钮开始录音</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：个人信息 -->
+    <div class="modal-overlay" id="profileModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>个人信息</h3>
+                <button class="close-btn" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>头像（点击图片更换）</label>
+                    <div class="avatar-upload">
+                        <img class="avatar-lg avatar-clickable" id="profileAvatar" src="/img/default-avatar.png" alt="点击更换头像" onclick="document.getElementById('avatarFile').click()">
+                        <input type="file" id="avatarFile" accept="image/*" onchange="uploadAvatar()" style="display:none">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>昵称</label>
+                    <input type="text" id="profileNickname" placeholder="请输入昵称">
+                </div>
+                <div class="form-group">
+                    <label>个性签名</label>
+                    <input type="text" id="profileSignature" placeholder="请输入个性签名">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('profileModal')">取消</button>
+                <button class="btn-confirm" onclick="saveProfile()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：添加好友 -->
+    <div class="modal-overlay" id="addFriendModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>添加好友</h3>
+                <button class="close-btn" onclick="closeModal('addFriendModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="addFriendUsername" placeholder="输入对方用户名">
+                </div>
+                <div class="form-group">
+                    <label>验证信息</label>
+                    <input type="text" id="addFriendMessage" placeholder="我是...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('addFriendModal')">取消</button>
+                <button class="btn-confirm" onclick="sendFriendRequest()">发送申请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：创建群聊 -->
+    <div class="modal-overlay" id="createGroupModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>创建群聊</h3>
+                <button class="close-btn" onclick="closeModal('createGroupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>群名称</label>
+                    <input type="text" id="createGroupName" placeholder="请输入群名称">
+                </div>
+                <div class="form-group">
+                    <label>群简介</label>
+                    <input type="text" id="createGroupDesc" placeholder="请输入群简介（可选）">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('createGroupModal')">取消</button>
+                <button class="btn-confirm" onclick="createGroup()">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：加入群聊 -->
+    <div class="modal-overlay" id="joinGroupModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>加入群聊</h3>
+                <button class="close-btn" onclick="closeModal('joinGroupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>群组ID</label>
+                    <input type="number" id="joinGroupId" placeholder="请输入群组ID">
+                    <div class="form-hint">群ID可在群聊列表、群信息或创建群成功提示中查看</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('joinGroupModal')">取消</button>
+                <button class="btn-confirm" onclick="joinGroup()">加入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：聊天记录 -->
+    <div class="modal-overlay" id="historyModal" style="display:none">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>聊天记录</h3>
+                <button class="close-btn" onclick="closeModal('historyModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-messages" id="historyMessages"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：群信息 -->
+    <div class="modal-overlay" id="groupInfoModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>群信息</h3>
+                <button class="close-btn" onclick="closeModal('groupInfoModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="groupInfoContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" onclick="leaveGroup()">退出群聊</button>
+                <button class="btn-cancel" onclick="closeModal('groupInfoModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：邀请好友入群 -->
+    <div class="modal-overlay" id="inviteFriendModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>邀请好友加入群聊</h3>
+                <button class="close-btn" onclick="closeModal('inviteFriendModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="inviteFriendContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：好友管理 -->
+    <div class="modal-overlay" id="friendManageModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>好友管理</h3>
+                <button class="close-btn" onclick="closeModal('friendManageModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" id="friendRemark" placeholder="设置好友备注">
+                </div>
+                <div class="form-group">
+                    <label>移动到分组</label>
+                    <select id="friendGroupSelect"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" onclick="deleteFriend()">删除好友</button>
+                <button class="btn-cancel" onclick="closeModal('friendManageModal')">取消</button>
+                <button class="btn-confirm" onclick="saveFriendManage()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：好友分组管理 -->
+    <div class="modal-overlay" id="groupManageModal" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>分组管理</h3>
+                <button class="close-btn" onclick="closeModal('groupManageModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>新建分组</label>
+                    <div style="display:flex;gap:8px">
+                        <input type="text" id="newGroupName" placeholder="分组名称">
+                        <button class="small-btn" onclick="createFriendGroup()">创建</button>
+                    </div>
+                </div>
+                <div id="groupManageList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览 -->
+    <div class="modal-overlay" id="imagePreviewModal" style="display:none" onclick="closeModal('imagePreviewModal')">
+        <div class="image-preview-wrap" onclick="event.stopPropagation()">
+            <img id="previewImage" src="" alt="图片预览">
+            <button class="close-btn preview-close" onclick="closeModal('imagePreviewModal')">&times;</button>
+        </div>
+    </div>
+
+    <script src="/js/sockjs.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+    <script src="/js/chat.js"></script>
+</body>
+</html>

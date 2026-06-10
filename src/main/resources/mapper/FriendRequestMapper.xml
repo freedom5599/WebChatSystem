@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chat.mapper.FriendRequestMapper">
+    <resultMap id="friendRequestResultMap" type="FriendRequest">
+        <id property="id" column="id"/>
+        <result property="fromUserId" column="from_user_id"/>
+        <result property="toUserId" column="to_user_id"/>
+        <result property="message" column="message"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="handleTime" column="handle_time"/>
+        <result property="fromNickname" column="from_nickname"/>
+        <result property="fromAvatar" column="from_avatar"/>
+        <result property="fromUsername" column="from_username"/>
+    </resultMap>
+    <select id="findByToUserId" resultMap="friendRequestResultMap">
+        SELECT fr.id, fr.from_user_id, fr.to_user_id, fr.message, fr.status,
+               fr.create_time, fr.handle_time,
+               u.nickname AS from_nickname, u.avatar AS from_avatar, u.username AS from_username
+        FROM friend_request fr
+        LEFT JOIN user u ON fr.from_user_id = u.id
+        WHERE fr.to_user_id = #{toUserId} AND fr.status = 0
+        ORDER BY fr.create_time DESC
+    </select>
+    <select id="findById" resultMap="friendRequestResultMap">
+        SELECT fr.id, fr.from_user_id, fr.to_user_id, fr.message, fr.status,
+               fr.create_time, fr.handle_time,
+               u.nickname AS from_nickname, u.avatar AS from_avatar
+        FROM friend_request fr
+        LEFT JOIN user u ON fr.from_user_id = u.id
+        WHERE fr.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend_request (from_user_id, to_user_id, message, status)
+        VALUES (#{fromUserId}, #{toUserId}, #{message}, #{status})
+    </insert>
+    <update id="updateStatus">
+        UPDATE friend_request SET status = #{status}, handle_time = NOW() WHERE id = #{id}
+    </update>
+</mapper>

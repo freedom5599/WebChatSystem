@@ -1,0 +1,19 @@
+# IDEA 配置文件
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Maven 编译产物
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# 临时文件与日志
+*.log
+*.tmp
+*.bak
+
+# 上传目录（按需保留，若不需要上传用户上传的文件则保留）
+upload/
